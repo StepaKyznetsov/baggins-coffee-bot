@@ -1,0 +1,21 @@
+# Node.js
+node_modules/
+
+# TypeScript
+*.js
+*.map
+*.tsbuildinfo
+
+# Output
+dist/
+
+# Environment variables
+.env
+
+sessions.json
+
+# Visual Studio Code
+.vscode/
+
+# Logs
+*.log
