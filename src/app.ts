@@ -6,13 +6,17 @@ import { ReportsCommand } from "./commands/reports.command";
 import LocalSession from "telegraf-session-local";
 import { StartCommand } from "./commands/start.command";
 import { HelpCommand } from "./commands/help.command";
-import { sendReportScene } from "./scenes/send-report.scene";
+import { SendReportScene } from "./scenes/send-report.scene";
+import { BackCommand } from "./commands/back.command";
 
 class Bot {
   bot: Telegraf<IBotContext>;
 
   constructor(private readonly configService: IConfigService) {
     this.bot = new Telegraf<IBotContext>(this.configService.get("TOKEN"));
+
+    const sendReportScene = new SendReportScene().enter();
+
     const stage = new Scenes.Stage<Scenes.WizardContext>([sendReportScene]);
 
     this.bot.use(new LocalSession({ database: "sessions.json" }).middleware());
@@ -30,13 +34,18 @@ class Bot {
       await startCommand.handle(ctx);
     });
 
-    this.bot.command("menu", async (ctx) => {
+    this.bot.command("reports", async (ctx) => {
       const reports = new ReportsCommand(this.bot);
       await reports.handle(ctx);
     });
 
-    this.bot.on("text", (ctx) => {
-      ctx.reply("Выберите одну из предложенных команд");
+    this.bot.command("back", async (ctx) => {
+      const back = new BackCommand(this.bot);
+      await back.handle(ctx);
+    });
+
+    this.bot.on("text", async (ctx) => {
+      await ctx.reply("Выберите одну из предложенных команд");
     });
 
     this.bot.launch();
