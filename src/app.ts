@@ -1,4 +1,4 @@
-import { Scenes, Telegraf } from "telegraf";
+import { MiddlewareObj, Scenes, Telegraf } from "telegraf";
 import { IConfigService } from "./config/config.interface";
 import { ConfigService } from "./config/config.service";
 import { IBotContext } from "./context/context.interface";
@@ -6,8 +6,9 @@ import { ReportsCommand } from "./commands/reports.command";
 import LocalSession from "telegraf-session-local";
 import { StartCommand } from "./commands/start.command";
 import { HelpCommand } from "./commands/help.command";
-import { SendReportScene } from "./scenes/send-report.scene";
 import { BackCommand } from "./commands/back.command";
+import { GetReportsScene } from "./scenes/get-reports.scene";
+import { SendReportScene } from "./scenes/send-report.scene";
 
 class Bot {
   bot: Telegraf<IBotContext>;
@@ -16,11 +17,18 @@ class Bot {
     this.bot = new Telegraf<IBotContext>(this.configService.get("TOKEN"));
 
     const sendReportScene = new SendReportScene().enter();
+    const getReportsScene = new GetReportsScene().enter();
 
-    const stage = new Scenes.Stage<Scenes.WizardContext>([sendReportScene]);
+    const wizardStage = new Scenes.Stage<Scenes.WizardContext>([
+      sendReportScene,
+    ]);
+    const baseStage = new Scenes.Stage<Scenes.SceneContext>([getReportsScene]);
 
     this.bot.use(new LocalSession({ database: "sessions.json" }).middleware());
-    this.bot.use(stage.middleware());
+    this.bot.use(wizardStage.middleware());
+    this.bot.use(
+      (baseStage as unknown as MiddlewareObj<IBotContext>).middleware()
+    );
   }
 
   init(): void {

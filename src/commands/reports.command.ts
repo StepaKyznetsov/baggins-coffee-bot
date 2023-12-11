@@ -23,7 +23,7 @@ export class ReportsCommand extends Command {
     });
 
     this.bot.action("send_report", async (ctx) => {
-      await ctx.scene.enter('send_report');
+      await ctx.scene.enter("send_report");
     });
   }
 }

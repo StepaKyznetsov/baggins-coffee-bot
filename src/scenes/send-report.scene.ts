@@ -34,7 +34,7 @@ export class SendReportScene extends Scene {
     );
 
     scene.command("back", async (ctx) => {
-      await ctx.reply('Выход из сцены send_reports')
+      await ctx.reply("Выход из сцены send_reports");
       await ctx.scene.leave();
     });
 

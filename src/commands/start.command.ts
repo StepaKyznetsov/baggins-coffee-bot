@@ -16,6 +16,7 @@ export class StartCommand extends Command {
 
   async handle(ctx: IBotContext): Promise<void> {
     await ctx.replyWithHTML(this.message);
+    await ctx.reply('Предположу, что Вам нужно поработать с отчётами. Для этого воспользуйтесь командой /reports');
     //something else later
   }
 }
