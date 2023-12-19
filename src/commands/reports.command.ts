@@ -1,7 +1,6 @@
 import { Telegraf, Markup } from "telegraf";
 import { Command } from "./command.class";
 import { IBotContext } from "../context/context.interface";
-import { Context } from "vm";
 
 export class ReportsCommand extends Command {
   message = "Выберите одну из команд";
@@ -10,7 +9,7 @@ export class ReportsCommand extends Command {
     super(bot);
   }
 
-  async handle(ctx: Context): Promise<void> {
+  async handle(ctx: IBotContext): Promise<void> {
     await ctx.reply(
       this.message,
       Markup.inlineKeyboard([
@@ -20,11 +19,11 @@ export class ReportsCommand extends Command {
     );
 
     this.bot.action("get_reports", async (ctx) => {
-      await ctx.reply("Пусто");
+      await ctx.scene.enter("get_reports");
     });
 
     this.bot.action("send_report", async (ctx) => {
-      ctx.scene.enter('send-report');
+      await ctx.scene.enter("send_report");
     });
   }
 }
