@@ -19,7 +19,7 @@ export class SendReportScene extends Scene {
           );
           return ctx.wizard.next();
         } else {
-          await ctx.reply("Пожалуйста, пришлите фотографию.");
+          await ctx.reply("Пожалуйста, пришлите фотографию");
         }
       },
       async (ctx) => {

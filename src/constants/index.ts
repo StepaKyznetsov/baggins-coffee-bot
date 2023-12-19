@@ -1,4 +1,6 @@
-export const months = [
+import { Month } from "../types";
+
+export const months: Month[][] = [
   ["Январь", "Февраль", "Март"],
   ["Апрель", "Май", "Июнь"],
   ["Июль", "Август", "Сентябрь"],

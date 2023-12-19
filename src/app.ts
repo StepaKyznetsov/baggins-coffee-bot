@@ -1,4 +1,4 @@
-import { MiddlewareObj, Scenes, Telegraf } from "telegraf";
+import { Scenes, Telegraf } from "telegraf";
 import { IConfigService } from "./config/config.interface";
 import { ConfigService } from "./config/config.service";
 import { IBotContext } from "./context/context.interface";
@@ -20,15 +20,11 @@ class Bot {
     const getReportsScene = new GetReportsScene().enter();
 
     const wizardStage = new Scenes.Stage<Scenes.WizardContext>([
-      sendReportScene,
+      getReportsScene, sendReportScene,
     ]);
-    const baseStage = new Scenes.Stage<Scenes.SceneContext>([getReportsScene]);
 
     this.bot.use(new LocalSession({ database: "sessions.json" }).middleware());
     this.bot.use(wizardStage.middleware());
-    this.bot.use(
-      (baseStage as unknown as MiddlewareObj<IBotContext>).middleware()
-    );
   }
 
   init(): void {

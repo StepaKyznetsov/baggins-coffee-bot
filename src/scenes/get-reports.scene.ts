@@ -2,78 +2,55 @@ import { Scene } from "./scene.class";
 import { IBotContext } from "../context/context.interface";
 import { Markup, Scenes } from "telegraf";
 import { dates, months } from "../constants";
+import { WizardScene } from "telegraf/typings/scenes";
+import { Message } from "telegraf/typings/core/types/typegram";
+import { createMonthArray, isStringInTwoDimensionalArray } from "../helpers/dates";
+import { Month } from "../types";
 
 export class GetReportsScene extends Scene {
-  // eslint-disable-next-line
-  enter(): Scenes.BaseScene<any> {
-    const scene = new Scenes.BaseScene<Scenes.SceneContext>("get_reports");
-
-    scene.enter(async (ctx) => {
-      await ctx.reply("Выберите необходимый месяц",
-        Markup.keyboard( 
-           months.map(e => e)
-        ).resize());
-    });
+  enter(): WizardScene<Scenes.WizardContext> {
+    const scene = new Scenes.WizardScene<Scenes.WizardContext>(
+      "get_reports",
+      async (ctx) => {
+        await ctx.reply(
+          "Укажите месяц, в который проводилась проверка (представлены данные только за 2024 год)",
+          Markup.keyboard(months.map((e) => e)).resize(),
+        );
+        return ctx.wizard.next();
+      },
+      async (ctx) => {
+        const selectedMonth = (ctx.message as Message.TextMessage).text as Month;
+        if (isStringInTwoDimensionalArray(selectedMonth, months)) {
+          await ctx.reply(`Выбран месяц: ${selectedMonth}`);
+          const dates = createMonthArray(selectedMonth);
+          ctx.reply(
+            "Выберите дату:",
+            Markup.keyboard(dates.map((e) => e)).resize()
+          );
+          return ctx.wizard.next();
+        } else {
+          await ctx.reply("Пожалуйста, выберите месяц")
+        }
+      },
+      async (ctx) => {
+        const selectedDay = (ctx.message as Message.TextMessage).text;
+        if (isStringInTwoDimensionalArray(selectedDay, dates)) {
+          return await this.leave(ctx);
+        } else {
+          await ctx.reply("Пожалуйста, выберите нужную дату.");
+        }
+      }
+    );
 
     scene.command("back", async (ctx) => {
-      await ctx.reply('Выход из сцены get_reports', Markup.removeKeyboard())
-      await ctx.scene.leave()
+      await this.leave(ctx)
     });
 
-    scene.on('text', async (ctx) => {
-      const selectedMonth = ctx.message.text;
-      if (months.flat().indexOf(selectedMonth) !== -1) {
-        await ctx.reply(`Выбран месяц: ${selectedMonth}`);
-        ctx.reply('Выберите дату:', Markup.keyboard( 
-          dates.map(e => e)
-       ).resize());
-      } else {
-        await ctx.reply('На данном этапе нужно выбрать месяц')
-      }
-    })
-
     return scene;
-
-    // enter(): Scenes.BaseScene<any> {
-    //   const scene = new Scenes.BaseScene<Scenes.SceneContext>(
-    //     "get_reports",
-    //     await ctx.reply("Укажите месяц, в который проводилась проверка",
-    //     Markup.keyboard( 
-    //        months.map(e => e)
-    //     ).resize());
-    //       return ctx.wizard.next();
-    //     },
-    //     async (ctx) => {
-    //       const selectedMonth = ctx.message.text;
-    //       if (months.flat().indexOf(selectedMonth) !== -1) {
-    //         await ctx.reply(`Выбран месяц: ${selectedMonth}`);
-    //         ctx.reply('Выберите дату:', Markup.keyboard( 
-    //           dates.map(e => e)
-    //        ).resize());
-    //       } else {
-    //         return ctx.wizard.next();
-    //       }
-    //     },
-    //     async (ctx) => {
-    //       const message = ctx.message as Message.PhotoMessage;
-    //       if (message.photo && message.photo.length > 0) {
-    //         await ctx.reply("Спасибо!", Markup.removeKeyboard());
-    //         return ctx.scene.leave();
-    //       } else {
-    //         await ctx.reply("Пожалуйста, пришлите фотографию кофемашины.");
-    //       }
-    //     }
-    //   );
-  
-    //   scene.command("back", async (ctx) => {
-    //     await ctx.reply("Выход из сцены send_reports");
-    //     await ctx.scene.leave();
-    //   });
-  
-    //   return scene;
   }
 
   async leave(ctx: IBotContext): Promise<void> {
+    Markup.removeKeyboard()
     await ctx.reply("Выход из сцены get_reports");
     await ctx.scene.leave();
   }
